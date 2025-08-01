@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserType {
+  INFLUENCER
+  BRAND_MANAGER
+  MARKETING_AGENCY
+}
+
+// 기본 사용자 정보
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  phoneNumber String?
+  name      String
+  userType  UserType @default(INFLUENCER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 관계
+  influencer Influencer?
+  brandManager BrandManager?
+  marketingAgency MarketingAgency?
+
+  @@map("users")
+}
+
+// 인플루언서 추가 정보
+model Influencer {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  youtubeUrl String?
+  blogUrl   String?
+  instagramUrl String?
+  tiktokUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 관계
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("influencers")
+}
+
+// 브랜드 담당자 추가 정보
+model BrandManager {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  youtubeUrl String?
+  blogUrl   String?
+  instagramUrl String?
+  tiktokUrl String?
+  businessRegistrationNumber String
+  address   String
+  detailedAddress String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 관계
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("brand_managers")
+}
+
+// 마케팅 대행사 추가 정보
+model MarketingAgency {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  businessRegistrationNumber String
+  address   String
+  detailedAddress String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 관계
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("marketing_agencies")
+} 
