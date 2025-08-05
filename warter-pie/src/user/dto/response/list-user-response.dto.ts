@@ -1,5 +1,6 @@
 import { User, UserType } from "@prisma/client";
 
+
 export class ListUserResponseDto {
     id: number;
     email: string;

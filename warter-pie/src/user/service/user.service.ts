@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { InfluencerSignupDto } from '../dto/influencer-signup.dto';
-import { BrandManagerSignupDto } from '../dto/brand-manager-signup.dto';
-import { MarketingAgencySignupDto } from '../dto/marketing-agency-signup.dto';
-import { CreateUserDto } from '../dto/create-user.dto';
+import { InfluencerSignupDto } from '../dto/signup/influencer-signup.dto';
+import { BrandManagerSignupDto } from '../dto/signup/brand-manager-signup.dto';
+import { MarketingAgencySignupDto } from '../dto/signup/marketing-agency-signup.dto';
+import { CreateUserDto } from '../dto/signup/create-user.dto';
 import { UserType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import { ListInfluencerResponseDto } from '../dto/list-influencer-response.dto';
-import { ListBrandManagerResponseDto } from '../dto/list-brand-manager-response.dto';
-import { ListMarketingAgencyResponseDto } from '../dto/list-marketing-agency-response.dto';
+import { ListInfluencerResponseDto } from '../dto/response/list-influencer-response.dto';
+import { ListBrandManagerResponseDto } from '../dto/response/list-brand-manager-response.dto';
+import { ListMarketingAgencyResponseDto } from '../dto/response/list-marketing-agency-response.dto';
 
 @Injectable()
 export class UserService {
