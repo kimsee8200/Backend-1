@@ -1,9 +1,9 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { UserService } from '../service/user.service';
-import { InfluencerSignupDto } from '../dto/influencer-signup.dto';
-import { BrandManagerSignupDto } from '../dto/brand-manager-signup.dto';
-import { MarketingAgencySignupDto } from '../dto/marketing-agency-signup.dto';
+import { InfluencerSignupDto } from '../dto/signup/influencer-signup.dto';
+import { BrandManagerSignupDto } from '../dto/signup/brand-manager-signup.dto';
+import { MarketingAgencySignupDto } from '../dto/signup/marketing-agency-signup.dto';
 import { JwtAuthGuard } from '../../auth/passport/jwt/jwt-auth.guard';
 
 @ApiTags('users')
