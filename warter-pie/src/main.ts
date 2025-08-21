@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { SuccessResponseInterceptor } from './common/interceptors/success-response.interceptor';
 import * as dotenv from 'dotenv';
 
 // 환경 변수 로드
@@ -9,7 +11,23 @@ dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
+
+  // 전역 파이프 및 필터/인터셉터 설정
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalInterceptors(new SuccessResponseInterceptor());
+
+  // CORS 설정
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
 
   // Swagger 설정
   const config = new DocumentBuilder()

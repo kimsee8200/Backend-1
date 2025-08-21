@@ -16,6 +16,27 @@ enum UserType {
   MARKETING_AGENCY
 }
 
+enum CampaignStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum SubmissionStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
 // 기본 사용자 정보
 model User {
   id        Int      @id @default(autoincrement())
@@ -31,6 +52,8 @@ model User {
   influencer Influencer?
   brandManager BrandManager?
   marketingAgency MarketingAgency?
+  ownedCampaigns Campaign[] @relation("CampaignOwner")
+  campaignApplications CampaignApplication[] @relation("CampaignApplicationInfluencer")
 
   @@map("users")
 }
@@ -87,3 +110,208 @@ model MarketingAgency {
 
   @@map("marketing_agencies")
 } 
+
+// 체험단 캠페인
+model Campaign {
+  id             Int            @id @default(autoincrement())
+  ownerUserId    Int
+  title          String
+  description    String
+  headcount      Int
+  applyStartAt   DateTime
+  applyEndAt     DateTime
+  contentDueAt   DateTime
+  status         CampaignStatus @default(DRAFT)
+  rewardType     String?
+  rewardAmount   Int?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  owner          User           @relation("CampaignOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  applications   CampaignApplication[]
+  images         CampaignImage[]
+
+  // Core spec-mapped fields kept on Campaign
+  dataType          Int?
+  productOfferType  Int?
+  experienceMission String?
+  offerContent      String?
+  charge            Int?
+  presidentImage    String?
+
+  // 1:1 details
+  profile           CampaignProfile?
+  timing            CampaignTiming?
+  visitRule         CampaignVisitRule?
+  // 1:N details
+  channelsRel       CampaignChannel[]
+  visitWeekdays     CampaignVisitWeekday[]
+  keywords          CampaignKeyword[]
+
+  @@map("campaigns")
+}
+
+model CampaignImage {
+  id         Int      @id @default(autoincrement())
+  campaignId Int
+  url        String
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("campaign_images")
+}
+
+// 1:1 세부 정보 (회사/상품/주소)
+model CampaignProfile {
+  campaignId      Int     @id
+  companyName     String
+  managerCallNum  String?
+  address         String
+  detailAddress   String?
+  category        String?
+  productUrl      String?
+
+  campaign        Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("campaign_profiles")
+}
+
+// 1:1 일정 정보
+model CampaignTiming {
+  campaignId             Int    @id
+  memberAnnouncementDate DateTime?
+  experienceStartAt      DateTime?
+  experienceEndAt        DateTime?
+  reviewEndAt            DateTime?
+
+  campaign               Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("campaign_timings")
+}
+
+// 1:1 방문 규칙
+model CampaignVisitRule {
+  campaignId        Int     @id
+  possibleTimeStart String?
+  possibleTimeEnd   String?
+  possibleVisitNow  Boolean @default(false)
+  noticesToVisit    String?
+
+  campaign          Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("campaign_visit_rules")
+}
+
+// 채널 다대일
+model CampaignChannel {
+  id         Int      @id @default(autoincrement())
+  campaignId Int
+  channel    Int
+
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, channel])
+  @@map("campaign_channels")
+}
+
+// 요일 다대일
+model CampaignVisitWeekday {
+  id         Int      @id @default(autoincrement())
+  campaignId Int
+  weekday    Int
+
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, weekday])
+  @@map("campaign_visit_weekdays")
+}
+
+// 키워드 다대일
+model CampaignKeyword {
+  id         Int      @id @default(autoincrement())
+  campaignId Int
+  keyword    String
+
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, keyword])
+  @@map("campaign_keywords")
+}
+
+// 공지사항/이벤트
+model Notice {
+  id        Int           @id @default(autoincrement())
+  title     String
+  content   String
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  images    NoticeImage[]
+
+  @@map("notices")
+}
+
+model NoticeImage {
+  id       Int    @id @default(autoincrement())
+  noticeId Int
+  url      String
+  sortOrder Int   @default(0)
+
+  notice   Notice @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+
+  @@map("notice_images")
+}
+
+model Event {
+  id        Int         @id @default(autoincrement())
+  title     String
+  content   String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  images    EventImage[]
+
+  @@map("events")
+}
+
+model EventImage {
+  id       Int   @id @default(autoincrement())
+  eventId  Int
+  url      String
+  sortOrder Int  @default(0)
+
+  event    Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("event_images")
+}
+
+model CampaignApplication {
+  id               Int               @id @default(autoincrement())
+  campaignId       Int
+  influencerUserId Int
+  status           ApplicationStatus @default(PENDING)
+  pitchText        String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  campaign         Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  influencer       User              @relation("CampaignApplicationInfluencer", fields: [influencerUserId], references: [id], onDelete: Cascade)
+  submissions      CampaignSubmission[]
+
+  @@unique([campaignId, influencerUserId])
+  @@map("campaign_applications")
+}
+
+model CampaignSubmission {
+  id             Int              @id @default(autoincrement())
+  applicationId  Int
+  urls           String[]
+  note           String?
+  status         SubmissionStatus @default(PENDING_REVIEW)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  application    CampaignApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("campaign_submissions")
+}

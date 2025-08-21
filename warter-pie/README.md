@@ -131,3 +131,140 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+# Warter Pie Backend
+
+Warter Pie 백엔드 API 서버입니다.
+
+## 주요 기능
+
+### 사용자 관리 (User Management)
+
+#### 회원가입
+- `POST /users/signup/influencer` - 인플루언서 회원가입
+- `POST /users/signup/brand-manager` - 브랜드 매니저 회원가입
+- `POST /users/signup/marketing-agency` - 마케팅 대행사 회원가입
+
+#### 사용자 조회
+- `GET /users` - 전체 사용자 목록 조회
+- `GET /users/search` - 사용자 검색 (이름, 타입, 페이지네이션)
+- `GET /users/:id` - 특정 사용자 정보 조회
+- `GET /users/me` - 현재 로그인한 사용자 정보 조회
+- `GET /users/type/influencers` - 인플루언서 목록 조회
+- `GET /users/type/brand-managers` - 브랜드 매니저 목록 조회
+- `GET /users/type/marketing-agencies` - 마케팅 대행사 목록 조회
+- `GET /users/stats` - 사용자 통계 정보 조회
+
+#### 사용자 정보 수정
+- `PUT /users/me` - 기본 사용자 정보 수정
+- `PUT /users/me/influencer-profile` - 인플루언서 프로필 수정
+- `PUT /users/me/brand-manager-profile` - 브랜드 매니저 프로필 수정
+- `PUT /users/me/marketing-agency-profile` - 마케팅 대행사 프로필 수정
+- `PUT /users/me/change-password` - 비밀번호 변경
+
+#### 사용자 삭제
+- `DELETE /users/me` - 현재 사용자 삭제
+
+### 인증 (Authentication)
+- `POST /auth/login` - 로그인
+- `POST /auth/register` - 회원가입
+
+### 라이센스 코드 (License Code)
+- `POST /licence-code/send` - 라이센스 코드 전송
+
+## 기술 스택
+
+- **Framework**: NestJS
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+- **Authentication**: JWT, Passport
+- **Validation**: class-validator
+- **Documentation**: Swagger/OpenAPI
+- **Testing**: Jest
+
+## 설치 및 실행
+
+### 1. 의존성 설치
+```bash
+npm install
+```
+
+### 2. 환경 변수 설정
+`.env` 파일을 생성하고 다음 변수들을 설정하세요:
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
+JWT_SECRET="your-jwt-secret"
+PORT=3000
+```
+
+### 3. 데이터베이스 마이그레이션
+```bash
+npx prisma migrate dev
+```
+
+### 4. 애플리케이션 실행
+```bash
+npm run start:dev
+```
+
+### 5. API 문서 확인
+브라우저에서 `http://localhost:3000/api`를 열어 Swagger 문서를 확인할 수 있습니다.
+
+## 데이터베이스 스키마
+
+### User (사용자)
+- 기본 사용자 정보 (이메일, 비밀번호, 이름, 전화번호, 사용자 타입)
+
+### Influencer (인플루언서)
+- 소셜 미디어 URL (유튜브, 블로그, 인스타그램, 틱톡)
+
+### BrandManager (브랜드 매니저)
+- 소셜 미디어 URL
+- 사업자등록번호, 주소 정보
+
+### MarketingAgency (마케팅 대행사)
+- 사업자등록번호, 주소 정보
+
+## API 응답 형식
+
+### 성공 응답
+```json
+{
+  "data": {...},
+  "message": "성공 메시지"
+}
+```
+
+### 에러 응답
+```json
+{
+  "statusCode": 400,
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "path": "/api/users",
+  "message": "에러 메시지",
+  "error": "Bad Request"
+}
+```
+
+## 보안 기능
+
+- JWT 기반 인증
+- 비밀번호 해시화 (bcrypt)
+- 입력 데이터 검증
+- CORS 설정
+- 전역 예외 처리
+
+## 개발 가이드
+
+### 새로운 기능 추가 시
+1. DTO 클래스 생성 (입력/출력 데이터 검증)
+2. Service 클래스에 비즈니스 로직 구현
+3. Controller 클래스에 엔드포인트 추가
+4. Swagger 문서화
+5. 테스트 코드 작성
+
+### 코드 스타일
+- TypeScript 사용
+- ESLint 규칙 준수
+- Swagger 문서화 필수
+- 에러 처리 및 로깅
