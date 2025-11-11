@@ -9,8 +9,8 @@ export class LoginResponseDto {
       id: 1,
       email: 'user@example.com',
       userType: 'INFLUENCER',
-      name: '홍길동'
-    }
+      name: '홍길동',
+    },
   })
   user: {
     id: number;

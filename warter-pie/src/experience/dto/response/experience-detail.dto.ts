@@ -9,7 +9,7 @@ export class ExperienceDetailDto {
   detail_address: string;
   cartegory: string;
   product_url: string;
-  chennals: number[];
+  channels: number[];
   possible_time_application: string[]; // yyyy-mm-dd
   member_announcement_time: string; // yyyy-mm-dd
   experience_time: string[]; // yyyy-mm-dd

@@ -2,7 +2,6 @@ import { IsString, IsEmail, MinLength, IsOptional } from 'class-validator';
 import { CreateUserDto } from './create-user.dto';
 
 export class InfluencerSignupDto extends CreateUserDto {
-
   @IsOptional()
   @IsString()
   youtubeUrl?: string;
@@ -18,4 +17,4 @@ export class InfluencerSignupDto extends CreateUserDto {
   @IsOptional()
   @IsString()
   tiktokUrl?: string;
-} 
+}

@@ -1,4 +1,11 @@
-import { IsOptional, IsString, IsInt, IsArray, IsBoolean, ArrayNotEmpty } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsInt,
+  IsArray,
+  IsBoolean,
+  ArrayNotEmpty,
+} from 'class-validator';
 
 export class ExperienceUpdateDataDto {
   @IsOptional()

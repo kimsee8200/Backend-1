@@ -1,5 +1,10 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+} from '@nestjs/swagger';
 
 export function RequireAuth() {
   return applyDecorators(ApiBearerAuth());
@@ -37,7 +42,17 @@ export function SearchQueries() {
   return applyDecorators(
     ApiQuery({ name: 'name', required: false, description: '사용자 이름' }),
     ApiQuery({ name: 'userType', required: false, description: '사용자 타입' }),
-    ApiQuery({ name: 'page', required: false, description: '페이지 번호', type: Number }),
-    ApiQuery({ name: 'limit', required: false, description: '페이지당 항목 수', type: Number }),
+    ApiQuery({
+      name: 'page',
+      required: false,
+      description: '페이지 번호',
+      type: Number,
+    }),
+    ApiQuery({
+      name: 'limit',
+      required: false,
+      description: '페이지당 항목 수',
+      type: Number,
+    }),
   );
 }

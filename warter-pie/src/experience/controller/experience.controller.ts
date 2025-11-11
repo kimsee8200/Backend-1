@@ -1,8 +1,32 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ExperienceService } from '../service/experience.service';
 import { PostReviewDto } from '../dto/post-review.dto';
+import { ApplyExperienceDto } from '../dto/apply-experience.dto';
 import { JwtAuthGuard } from '../../auth/passport/jwt/jwt-auth.guard';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  CurrentUser,
+  CurrentUserPayload,
+} from '../../user/decorators/current-user.decorator';
+import { MyReviewItemDto } from '../dto/response/my-review-list.dto';
+import { ExperienceListQueryDto } from '../../experience-manage/dto/experience-list.query.dto';
 
 @ApiTags('experience')
 @Controller('experience')
@@ -11,8 +35,33 @@ export class ExperienceController {
 
   @ApiOperation({ summary: '체험단 목록/검색(선택 인증)' })
   @Get('list')
-  async list(@Query('keyword') keyword?: string) {
-    return this.service.list(keyword ?? null);
+  async list(@Query() query: ExperienceListQueryDto) {
+    return this.service.list(query);
+  }
+
+  @ApiOperation({ summary: '진행중 체험 조회(필수 인증)' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  async myProgress(@CurrentUser() user: CurrentUserPayload) {
+    return this.service.myProgress(user.userId);
+  }
+
+  @ApiOperation({ summary: '지난 체험 조회(필수 인증)' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('me/before')
+  async myPast(@CurrentUser() user: CurrentUserPayload) {
+    return this.service.myPast(user.userId);
+  }
+
+  @ApiOperation({ summary: '내 리뷰 목록 조회(필수 인증)' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ type: [MyReviewItemDto] })
+  @Get('me/reviews')
+  async myReviews(@CurrentUser() user: CurrentUserPayload) {
+    return this.service.listMyReviews(user.userId);
   }
 
   @ApiOperation({ summary: '체험단 상세 조회(선택 인증)' })
@@ -25,35 +74,26 @@ export class ExperienceController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post(':id')
-  async apply(@Param('id', ParseIntPipe) expId: number, @Body() _body: any, @Query() _q: any, @Body() _b2?: any) {
-    // JWT 가드에서 할당된 사용자 ID 사용
-    // Nest 표준에서는 @Req()로 req.user.userId를 받지만, 간단히 서비스에서 처리하지 않고 컨트롤러에서 가져옵니다.
-    // 여기는 req를 직접 받지 않도록 단순화했으므로 서비스 단에서 보완하지 않고 컨트롤러에서 처리하려면 @Request가 필요합니다.
-    return { exp_id: await this.service.apply(expId) };
-  }
-
-  @ApiOperation({ summary: '진행중 체험 조회(필수 인증)' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @Get('me')
-  async myProgress() {
-    return this.service.myProgress('me');
-  }
-
-  @ApiOperation({ summary: '지난 체험 조회(필수 인증)' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @Get('me/before')
-  async myPast() {
-    return this.service.myPast('me');
+  async apply(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseIntPipe) expId: number,
+    @Body() applyDto: ApplyExperienceDto,
+  ) {
+    return {
+      exp_id: await this.service.apply(expId, user.userId, applyDto.pitchText),
+    };
   }
 
   @ApiOperation({ summary: '리뷰 등록(필수 인증)' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post(':id/review')
-  async postReview(@Param('id', ParseIntPipe) expId: number, @Body() dto: PostReviewDto) {
-    await this.service.postReview(expId, 'me', dto);
+  async postReview(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseIntPipe) expId: number,
+    @Body() dto: PostReviewDto,
+  ) {
+    await this.service.postReview(expId, user.userId, dto);
     return {};
   }
 
@@ -62,8 +102,12 @@ export class ExperienceController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id/:reviewId')
   @HttpCode(200)
-  async deleteReview(@Param('id', ParseIntPipe) expId: number, @Param('reviewId', ParseIntPipe) reviewId: number) {
-    await this.service.deleteReview(expId, reviewId, 'me');
+  async deleteReview(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseIntPipe) expId: number,
+    @Param('reviewId', ParseIntPipe) reviewId: number,
+  ) {
+    await this.service.deleteReview(expId, reviewId, user.userId);
     return {};
   }
 
@@ -72,8 +116,11 @@ export class ExperienceController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @HttpCode(200)
-  async cancelApplication(@Param('id', ParseIntPipe) expId: number) {
-    await this.service.cancelApplication(expId, 'me');
+  async cancelApplication(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseIntPipe) expId: number,
+  ) {
+    await this.service.cancelApplication(expId, user.userId);
     return {};
   }
 }

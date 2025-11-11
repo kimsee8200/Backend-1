@@ -8,7 +8,11 @@ export class SearchUserDto {
   @IsString()
   name?: string;
 
-  @ApiProperty({ description: '사용자 타입으로 필터링', required: false, enum: UserType })
+  @ApiProperty({
+    description: '사용자 타입으로 필터링',
+    required: false,
+    enum: UserType,
+  })
   @IsOptional()
   @IsEnum(UserType)
   userType?: UserType;
@@ -17,7 +21,11 @@ export class SearchUserDto {
   @IsOptional()
   page?: number = 1;
 
-  @ApiProperty({ description: '페이지당 항목 수', required: false, default: 10 })
+  @ApiProperty({
+    description: '페이지당 항목 수',
+    required: false,
+    default: 10,
+  })
   @IsOptional()
   limit?: number = 10;
 }

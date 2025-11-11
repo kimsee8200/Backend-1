@@ -8,6 +8,4 @@ export class CreateEventDto {
   @IsString()
   @IsNotEmpty()
   content: string;
-
-  images?: string[];
 }

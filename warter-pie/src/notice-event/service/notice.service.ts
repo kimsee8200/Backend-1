@@ -5,19 +5,26 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class NoticeService {
   constructor(private readonly prisma: PrismaService) {}
 
-   // Notice
-   async createNotice(title: string, content: string, imageUrls: string[]) {
+  // Notice
+  async createNotice(title: string, content: string, imageUrls: string[]) {
     return this.prisma.notice.create({
       data: {
         title,
         content,
-        images: { create: imageUrls.map((url, idx) => ({ url, sortOrder: idx })) },
+        images: {
+          create: imageUrls.map((url, idx) => ({ url, sortOrder: idx })),
+        },
       },
       include: { images: true },
     });
   }
 
-  async updateNotice(id: number, title?: string, content?: string, imageUrls?: string[]) {
+  async updateNotice(
+    id: number,
+    title?: string,
+    content?: string,
+    imageUrls?: string[],
+  ) {
     const data: any = {};
     if (title !== undefined) data.title = title;
     if (content !== undefined) data.content = content;
@@ -27,7 +34,13 @@ export class NoticeService {
     if (imageUrls) {
       await this.prisma.noticeImage.deleteMany({ where: { noticeId: id } });
       if (imageUrls.length) {
-        await this.prisma.noticeImage.createMany({ data: imageUrls.map((url, idx) => ({ noticeId: id, url, sortOrder: idx })) });
+        await this.prisma.noticeImage.createMany({
+          data: imageUrls.map((url, idx) => ({
+            noticeId: id,
+            url,
+            sortOrder: idx,
+          })),
+        });
       }
     }
 
@@ -40,7 +53,10 @@ export class NoticeService {
   }
 
   async findNotice(id: number) {
-    const n = await this.prisma.notice.findUnique({ where: { id }, include: { images: { orderBy: { sortOrder: 'asc' } } } });
+    const n = await this.prisma.notice.findUnique({
+      where: { id },
+      include: { images: { orderBy: { sortOrder: 'asc' } } },
+    });
     if (!n) throw new NotFoundException('공지사항을 찾을 수 없습니다.');
     return n;
   }

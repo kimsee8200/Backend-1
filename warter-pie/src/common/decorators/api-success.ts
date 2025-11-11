@@ -19,7 +19,7 @@ export function ApiSuccess<TModel extends Type<any>>(model?: TModel) {
         : {
             $ref: getSchemaPath(SuccessResponseDto),
           },
-    })
+    }),
   );
 }
 

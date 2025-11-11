@@ -14,6 +14,7 @@ enum UserType {
   INFLUENCER
   BRAND_MANAGER
   MARKETING_AGENCY
+  ADMIN
 }
 
 enum CampaignStatus {
@@ -45,8 +46,9 @@ model User {
   phoneNumber String?
   name      String
   userType  UserType @default(INFLUENCER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @db.Timestamptz(3) @default(now())
+  updatedAt DateTime @db.Timestamptz(3) @updatedAt
+  points    Int      @default(0)
 
   // 관계
   influencer Influencer?
@@ -54,6 +56,9 @@ model User {
   marketingAgency MarketingAgency?
   ownedCampaigns Campaign[] @relation("CampaignOwner")
   campaignApplications CampaignApplication[] @relation("CampaignApplicationInfluencer")
+  inquiries Inquiry[] @relation("UserInquiries")
+  penalties Penalty[] @relation("UserPenalties")
+  pointTransactions PointTransaction[] @relation("PointTransactions")
 
   @@map("users")
 }
@@ -66,8 +71,8 @@ model Influencer {
   blogUrl   String?
   instagramUrl String?
   tiktokUrl String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @db.Timestamptz(3) @default(now())
+  updatedAt DateTime @db.Timestamptz(3) @updatedAt
 
   // 관계
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -86,8 +91,8 @@ model BrandManager {
   businessRegistrationNumber String
   address   String
   detailedAddress String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @db.Timestamptz(3) @default(now())
+  updatedAt DateTime @db.Timestamptz(3) @updatedAt
 
   // 관계
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -102,8 +107,8 @@ model MarketingAgency {
   businessRegistrationNumber String
   address   String
   detailedAddress String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @db.Timestamptz(3) @default(now())
+  updatedAt DateTime @db.Timestamptz(3) @updatedAt
 
   // 관계
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -118,14 +123,14 @@ model Campaign {
   title          String
   description    String
   headcount      Int
-  applyStartAt   DateTime
-  applyEndAt     DateTime
-  contentDueAt   DateTime
+  applyStartAt   DateTime @db.Timestamptz(3)
+  applyEndAt     DateTime @db.Timestamptz(3)
+  contentDueAt   DateTime @db.Timestamptz(3)
   status         CampaignStatus @default(DRAFT)
   rewardType     String?
   rewardAmount   Int?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt      DateTime @db.Timestamptz(3)       @default(now())
+  updatedAt      DateTime @db.Timestamptz(3)       @updatedAt
 
   owner          User           @relation("CampaignOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
   applications   CampaignApplication[]
@@ -156,7 +161,7 @@ model CampaignImage {
   campaignId Int
   url        String
   sortOrder  Int      @default(0)
-  createdAt  DateTime @default(now())
+  createdAt  DateTime @db.Timestamptz(3) @default(now())
 
   campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
@@ -180,11 +185,11 @@ model CampaignProfile {
 
 // 1:1 일정 정보
 model CampaignTiming {
-  campaignId             Int    @id
-  memberAnnouncementDate DateTime?
-  experienceStartAt      DateTime?
-  experienceEndAt        DateTime?
-  reviewEndAt            DateTime?
+  campaignId             Int       @id
+  memberAnnouncementDate DateTime? @db.Timestamptz(3)
+  experienceStartAt      DateTime? @db.Timestamptz(3)
+  experienceEndAt        DateTime? @db.Timestamptz(3)
+  reviewEndAt            DateTime? @db.Timestamptz(3)
 
   campaign               Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
@@ -245,8 +250,8 @@ model Notice {
   id        Int           @id @default(autoincrement())
   title     String
   content   String
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  createdAt DateTime @db.Timestamptz(3)      @default(now())
+  updatedAt DateTime @db.Timestamptz(3)      @updatedAt
   images    NoticeImage[]
 
   @@map("notices")
@@ -267,8 +272,8 @@ model Event {
   id        Int         @id @default(autoincrement())
   title     String
   content   String
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  createdAt DateTime @db.Timestamptz(3)    @default(now())
+  updatedAt DateTime @db.Timestamptz(3)    @updatedAt
   images    EventImage[]
 
   @@map("events")
@@ -291,8 +296,9 @@ model CampaignApplication {
   influencerUserId Int
   status           ApplicationStatus @default(PENDING)
   pitchText        String?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  createdAt        DateTime @db.Timestamptz(3)          @default(now())
+  updatedAt        DateTime @db.Timestamptz(3)          @updatedAt
+  isPenaltyApplied Boolean @default(false)
 
   campaign         Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   influencer       User              @relation("CampaignApplicationInfluencer", fields: [influencerUserId], references: [id], onDelete: Cascade)
@@ -308,10 +314,67 @@ model CampaignSubmission {
   urls           String[]
   note           String?
   status         SubmissionStatus @default(PENDING_REVIEW)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  createdAt      DateTime @db.Timestamptz(3)         @default(now())
+  updatedAt      DateTime @db.Timestamptz(3)         @updatedAt
 
   application    CampaignApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
   @@map("campaign_submissions")
+}
+
+enum InquiryStatus {
+  PENDING
+  ANSWERED
+}
+
+model Inquiry {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  answer    String?
+  status    InquiryStatus @default(PENDING)
+  createdAt DateTime @db.Timestamptz(3) @default(now())
+  updatedAt DateTime @db.Timestamptz(3) @updatedAt
+
+  authorId  Int
+  author    User     @relation("UserInquiries", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("inquiries")
+}
+
+model Penalty {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  reason    String
+  appliedAt DateTime @db.Timestamptz(3) @default(now())
+
+  user      User     @relation("UserPenalties", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("penalties")
+}
+
+enum PaymentStatus {
+  PENDING
+  DONE
+  CANCELED
+  FAILED
+}
+
+model PointTransaction {
+  id            Int           @id @default(autoincrement())
+  userId        Int
+  orderId       String        @unique // Toss Payments order ID
+  orderName     String?       // Name of the order/product
+  paymentKey    String?       @unique // Toss Payments payment key
+  amount        Int           // Payment amount (e.g., KRW)
+  chargedPoints Int           // Points added to user's balance
+  status        PaymentStatus
+  paymentMethod String?       // e.g., '카드', '가상계좌'
+  paidAt        DateTime?     @db.Timestamptz(3)
+  createdAt     DateTime      @db.Timestamptz(3) @default(now())
+  updatedAt     DateTime      @db.Timestamptz(3) @updatedAt
+
+  user          User          @relation("PointTransactions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("point_transactions")
 }

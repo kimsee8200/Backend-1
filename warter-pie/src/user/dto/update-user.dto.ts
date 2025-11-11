@@ -1,4 +1,10 @@
-import { IsOptional, IsString, IsEmail, MinLength, Matches } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEmail,
+  MinLength,
+  Matches,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateUserDto {
@@ -16,7 +22,8 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   @Matches(/^01[0-9]-\d{3,4}-\d{4}$/, {
-    message: 'phoneNumber must be a valid Korean phone number (e.g., 010-1234-5678)',
+    message:
+      'phoneNumber must be a valid Korean phone number (e.g., 010-1234-5678)',
   })
   phoneNumber?: string;
 

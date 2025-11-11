@@ -4,10 +4,13 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { SuccessResponseInterceptor } from './common/interceptors/success-response.interceptor';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import * as dotenv from 'dotenv';
 
 // 환경 변수 로드
 dotenv.config();
+console.log(process.env); // Debugging line
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,7 +24,10 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new HttpExceptionFilter());
-  app.useGlobalInterceptors(new SuccessResponseInterceptor());
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(),
+    new SuccessResponseInterceptor(),
+  );
 
   // CORS 설정
   app.enableCors({

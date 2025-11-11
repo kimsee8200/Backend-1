@@ -1,8 +1,9 @@
 export class ExperienceListItemDto {
+  id: number;
   data_type: number; // 1=지역, 2=제품
   product_offer_type: number; // 1~4
   cartegory: string;
-  chennals: number[];
+  channels: number[];
   possible_time_application_left: number;
   title: string;
   offer_content: string;

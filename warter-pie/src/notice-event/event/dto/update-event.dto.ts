@@ -8,6 +8,4 @@ export class UpdateEventDto {
   @IsOptional()
   @IsString()
   content?: string;
-
-  images?: string[];
 }

@@ -2,8 +2,7 @@ import { IsString, IsEmail, MinLength, IsOptional } from 'class-validator';
 import { CreateUserDto } from './create-user.dto';
 import { InfluencerSignupDto } from './influencer-signup.dto';
 
-export class BrandManagerSignupDto extends InfluencerSignupDto{
-
+export class BrandManagerSignupDto extends InfluencerSignupDto {
   @IsString()
   businessRegistrationNumber: string;
 
@@ -12,4 +11,4 @@ export class BrandManagerSignupDto extends InfluencerSignupDto{
 
   @IsString()
   detailedAddress: string;
-} 
+}

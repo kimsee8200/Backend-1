@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { InfluencerSignupDto } from '../dto/signup/influencer-signup.dto';
 import { BrandManagerSignupDto } from '../dto/signup/brand-manager-signup.dto';
@@ -33,7 +37,7 @@ export class UserService {
 
   async createInfluencer(dto: InfluencerSignupDto) {
     const hashedPassword = await bcrypt.hash(dto.password, 10);
-    
+
     return this.prisma.user.create({
       data: {
         email: dto.email,
@@ -58,7 +62,7 @@ export class UserService {
 
   async createBrandManager(dto: BrandManagerSignupDto) {
     const hashedPassword = await bcrypt.hash(dto.password, 10);
-    
+
     return this.prisma.user.create({
       data: {
         email: dto.email,
@@ -86,7 +90,7 @@ export class UserService {
 
   async createMarketingAgency(dto: MarketingAgencySignupDto) {
     const hashedPassword = await bcrypt.hash(dto.password, 10);
-    
+
     return this.prisma.user.create({
       data: {
         email: dto.email,
@@ -110,7 +114,7 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto) {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    
+
     return this.prisma.user.create({
       data: {
         email: createUserDto.email,
@@ -169,12 +173,13 @@ export class UserService {
 
   async update(id: number, data: UpdateUserDto) {
     const updateData: any = {};
-    
+
     // 기본 사용자 정보 업데이트
     if (data.name !== undefined) updateData.name = data.name;
     if (data.email !== undefined) updateData.email = data.email;
-    if (data.phoneNumber !== undefined) updateData.phoneNumber = data.phoneNumber;
-    
+    if (data.phoneNumber !== undefined)
+      updateData.phoneNumber = data.phoneNumber;
+
     // 비밀번호 변경
     if (data.newPassword) {
       updateData.password = await bcrypt.hash(data.newPassword, 10);
@@ -193,9 +198,11 @@ export class UserService {
 
   async updateInfluencerProfile(userId: number, data: UpdateInfluencerDto) {
     const user = await this.findById(userId);
-    
+
     if (user.userType !== UserType.INFLUENCER) {
-      throw new BadRequestException('인플루언서만 프로필을 수정할 수 있습니다.');
+      throw new BadRequestException(
+        '인플루언서만 프로필을 수정할 수 있습니다.',
+      );
     }
 
     return this.prisma.influencer.update({
@@ -219,9 +226,11 @@ export class UserService {
 
   async updateBrandManagerProfile(userId: number, data: UpdateBrandManagerDto) {
     const user = await this.findById(userId);
-    
+
     if (user.userType !== UserType.BRAND_MANAGER) {
-      throw new BadRequestException('브랜드 매니저만 프로필을 수정할 수 있습니다.');
+      throw new BadRequestException(
+        '브랜드 매니저만 프로필을 수정할 수 있습니다.',
+      );
     }
 
     return this.prisma.brandManager.update({
@@ -243,11 +252,16 @@ export class UserService {
     });
   }
 
-  async updateMarketingAgencyProfile(userId: number, data: UpdateMarketingAgencyDto) {
+  async updateMarketingAgencyProfile(
+    userId: number,
+    data: UpdateMarketingAgencyDto,
+  ) {
     const user = await this.findById(userId);
-    
+
     if (user.userType !== UserType.MARKETING_AGENCY) {
-      throw new BadRequestException('마케팅 대행사만 프로필을 수정할 수 있습니다.');
+      throw new BadRequestException(
+        '마케팅 대행사만 프로필을 수정할 수 있습니다.',
+      );
     }
 
     return this.prisma.marketingAgency.update({
@@ -271,7 +285,7 @@ export class UserService {
 
   async delete(id: number) {
     const user = await this.findById(id);
-    
+
     return this.prisma.user.delete({
       where: { id },
     });
@@ -283,14 +297,14 @@ export class UserService {
     const skip = (page - 1) * limit;
 
     const where: any = {};
-    
+
     if (name) {
       where.name = {
         contains: name,
         mode: 'insensitive', // 대소문자 구분 없이 검색
       };
     }
-    
+
     if (userType) {
       where.userType = userType;
     }
@@ -325,33 +339,46 @@ export class UserService {
 
   // 특정 타입의 사용자만 조회하는 메서드들
   async findInfluencers() {
-    return ListInfluencerResponseDto.fromEntities(await this.prisma.user.findMany({
-      where: { userType: UserType.INFLUENCER },
-      include: { influencer: true },
-    }));
+    return ListInfluencerResponseDto.fromEntities(
+      await this.prisma.user.findMany({
+        where: { userType: UserType.INFLUENCER },
+        include: { influencer: true },
+      }),
+    );
   }
 
   async findBrandManagers() {
-    return ListBrandManagerResponseDto.fromEntities(await this.prisma.user.findMany({
-      where: { userType: UserType.BRAND_MANAGER },
-      include: { brandManager: true },
-    }));
+    return ListBrandManagerResponseDto.fromEntities(
+      await this.prisma.user.findMany({
+        where: { userType: UserType.BRAND_MANAGER },
+        include: { brandManager: true },
+      }),
+    );
   }
 
   async findMarketingAgencies() {
-    return ListMarketingAgencyResponseDto.fromEntities(await this.prisma.user.findMany({
-      where: { userType: UserType.MARKETING_AGENCY },
-      include: { marketingAgency: true },
-    }));
+    return ListMarketingAgencyResponseDto.fromEntities(
+      await this.prisma.user.findMany({
+        where: { userType: UserType.MARKETING_AGENCY },
+        include: { marketingAgency: true },
+      }),
+    );
   }
 
   // 사용자 통계 정보
   async getUserStats() {
-    const [totalUsers, influencerCount, brandManagerCount, marketingAgencyCount] = await Promise.all([
+    const [
+      totalUsers,
+      influencerCount,
+      brandManagerCount,
+      marketingAgencyCount,
+    ] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.user.count({ where: { userType: UserType.INFLUENCER } }),
       this.prisma.user.count({ where: { userType: UserType.BRAND_MANAGER } }),
-      this.prisma.user.count({ where: { userType: UserType.MARKETING_AGENCY } }),
+      this.prisma.user.count({
+        where: { userType: UserType.MARKETING_AGENCY },
+      }),
     ]);
 
     return {
@@ -365,7 +392,7 @@ export class UserService {
   // 비밀번호 변경
   async changePassword(userId: number, changePasswordDto: ChangePasswordDto) {
     const user = await this.findById(userId);
-    
+
     // 현재 비밀번호 확인
     const isCurrentPasswordValid = await bcrypt.compare(
       changePasswordDto.currentPassword,
@@ -377,7 +404,10 @@ export class UserService {
     }
 
     // 새 비밀번호 해시화
-    const hashedNewPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+    const hashedNewPassword = await bcrypt.hash(
+      changePasswordDto.newPassword,
+      10,
+    );
 
     // 비밀번호 업데이트
     return this.prisma.user.update({
